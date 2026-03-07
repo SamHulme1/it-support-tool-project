@@ -27,7 +27,6 @@ output_box.pack(pady=10)
 # -----------------------------
 def run_test(test_func):
     output_box.delete("1.0", "end")  # Clear previous output
-    results.clear()  # Clear previous results
     test_func()
 
 # -----------------------------
@@ -38,18 +37,34 @@ def check_cpu():
         cpu_usage = psutil.cpu_percent(interval=1)
         if cpu_usage < 70:
             status = "PASS"
-            fix = "CPU usage normal."
+            fix = "CPU usage within normal range."
         elif cpu_usage < 90:
             status = "WARNING"
-            fix = "Close unnecessary apps or restart system."
+            fix = """Troubleshooting steps:
+1. Close unnecessary applications
+2. Disable unused startup programs
+3. Check Task Manager for background updates
+4. Escalate if issue persists
+"""
         else:
             status = "FAIL"
-            fix = "Investigate high CPU usage."
+            fix = """Troubleshooting steps:
+1. Identify high CPU processes in Task Manager
+2. End unnecessary tasks
+3. Restart computer
+4. Check for updates
+5. Run malware scan
+6. Escalate if issue persists 
+"""
         results.append(("CPU Usage", status, fix))
-        output_box.insert("end", f"CPU Usage: {cpu_usage}% - {status}\n{fix}\n\n")
+        output_box.insert("end", f"CPU Usage: {cpu_usage}% - {status}\n")
+        output_box.insert("end", f"{fix}\n\n")
     except:
         output_box.insert("end", "CPU test failed\n\n")
 
+# -----------------------------
+# RAM Check
+# -----------------------------
 def check_ram():
     memory = psutil.virtual_memory()
     percent = memory.percent
@@ -58,13 +73,26 @@ def check_ram():
         fix = "RAM usage normal."
     elif percent < 90:
         status = "WARNING"
-        fix = "Close unused applications."
+        fix = """Troubleshooting steps:
+1. Close unused applications
+2. Restart the computer
+3. Escalate if issue persists
+"""
     else:
         status = "FAIL"
-        fix = "Investigate high RAM usage."
+        fix = """Troubleshooting steps:
+1. Close heavy apps
+2. Restart system
+3. Check Task Manager for memory hogs
+4. Escalate if issue persists
+"""
     results.append(("RAM Usage", status, fix))
-    output_box.insert("end", f"RAM Usage: {percent}% - {status}\n{fix}\n\n")
+    output_box.insert("end", f"RAM Usage: {percent}% - {status}\n")
+    output_box.insert("end", f"{fix}\n\n")
 
+# -----------------------------
+# Disk Check
+# -----------------------------
 def check_disk():
     total, used, free = shutil.disk_usage("C:\\")
     percent = (used / total) * 100
@@ -73,33 +101,67 @@ def check_disk():
         fix = "Disk space healthy."
     elif percent < 90:
         status = "WARNING"
-        fix = "Delete unnecessary files."
+        fix = """Troubleshooting steps:
+1. Empty recycle bin
+2. Delete temporary files
+3. Remove unused apps
+4. Escalate if issue persists
+"""
     else:
         status = "FAIL"
-        fix = "Clear disk urgently."
+        fix = """Troubleshooting steps:
+1. Delete large unnecessary files
+2. Clear temp files
+3. Move files to external storage
+4. Escalate if issue persists
+"""
     results.append(("Disk Space", status, fix))
-    output_box.insert("end", f"Disk Usage: {percent:.2f}% - {status}\n{fix}\n\n")
+    output_box.insert("end", f"Disk Usage: {percent:.2f}% - {status}\n")
+    output_box.insert("end", f"{fix}\n\n")
 
+# -----------------------------
+# Network Check
+# -----------------------------
 def check_network():
     try:
         socket.create_connection(("8.8.8.8", 53), timeout=3)
-        response = subprocess.run(["ping", "-n", "1", "8.8.8.8"], capture_output=True, text=True)
+        response = subprocess.run(
+            ["ping", "-n", "1", "8.8.8.8"],
+            capture_output=True,
+            text=True
+        )
         ping = int(response.stdout.split("time=")[1].split("ms")[0])
         if ping < 50:
             status = "PASS"
-            fix = "Network latency normal."
+            fix = "Network normal."
         elif ping < 100:
             status = "WARNING"
-            fix = "Check Wi-Fi or close heavy apps."
+            fix = """Troubleshooting steps:
+1. Check Wi-Fi signal
+2. Move closer to router
+3. Disconnect unused devices
+4. Escalate if issue persists
+"""
         else:
             status = "FAIL"
-            fix = "Restart router or check network."
+            fix = """Troubleshooting steps:
+1. Restart router/modem
+2. Check network cables
+3. Close bandwidth heavy apps
+4. Escalate if issue persists
+"""
         results.append(("Network Connection", status, fix))
-        output_box.insert("end", f"Network Ping: {ping} ms - {status}\n{fix}\n\n")
+        output_box.insert("end", f"Network Ping: {ping} ms - {status}\n")
+        output_box.insert("end", f"{fix}\n\n")
     except:
         status = "FAIL"
-        fix = "Network test failed. Check connection."
+        fix = """Troubleshooting steps:
+1. Check Wi-Fi/Ethernet
+2. Restart 
+3. Escalate if issue persists
+"""
         results.append(("Network Connection", status, fix))
+        output_box.insert("end", "Network test failed\n")
         output_box.insert("end", f"{fix}\n\n")
 
 # -----------------------------
@@ -123,7 +185,13 @@ def check_antivirus():
         else:
             status = "FAIL"
             fix_button_antivirus.config(state="normal")
-            fix_text = "Antivirus inactive."
+            fix_text = """
+            Antivirus inactive.
+            Troubleshooting steps:
+            1. Check for update in settings
+            2. Check for update online
+            3. Escalate if issue persists"""
+
         results.append(("Antivirus Status", status, ""))
         output_box.insert("end", f"Antivirus Status: {status}\n{fix_text}\n\n")
     except:
@@ -157,7 +225,12 @@ def check_updates():
         status = "FAIL"
         fix_button_update.config(state="normal")
         results.append(("Windows Updates", status, ""))
-        output_box.insert("end", "Update check failed\n\n")
+        output_box.insert("end", """"
+            Windows OS needs updating.
+            Troubleshooting steps:
+            1. Check for update in settings
+            2. Check for update online
+            3. Escalate if issue persists""")
 
 def open_device_manager():
     os.system("devmgmt.msc")
@@ -173,7 +246,7 @@ def check_drivers():
         if driver_issue:
             status = "FAIL"
             fix_button_drivers.config(state="normal")
-            fix_text = "Driver issue detected."
+            fix_text = "Driver issue detected. \n Please update device drivers"
         else:
             status = "PASS"
             fix_button_drivers.config(state="disabled")
@@ -184,7 +257,12 @@ def check_drivers():
         status = "FAIL"
         fix_button_drivers.config(state="normal")
         results.append(("Driver Status", status, ""))
-        output_box.insert("end", "Driver check failed\n\n")
+        output_box.insert("end", """
+            Driver test failed.
+            Troubleshooting steps:
+            1. Check for driver updates in settings
+            2. Check for driver updates online
+            3. Escalate if issue persists""")
 
 # -----------------------------
 # Report Window
@@ -215,7 +293,7 @@ def open_report_window():
     tk.Button(report_window, text="Escalate", command=escalate).pack(pady=10)
 
     def save_report_with_info():
-        folder = os.path.join(os.path.dirname(os.path.abspath(_file_)), "Reports")
+        folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Reports")
         if not os.path.exists(folder):
             os.makedirs(folder)
         filename = os.path.join(folder, f"IT_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
